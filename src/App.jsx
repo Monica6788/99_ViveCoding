@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import TodoMemo from './components/TodoMemo'
 import './App.css'
 
 const STORAGE_KEY = 'todo-app:todos'
@@ -24,6 +25,7 @@ function App() {
   const [filter, setFilter] = useState('all')
   const [editingId, setEditingId] = useState(null)
   const [editText, setEditText] = useState('')
+  const [memoOpenId, setMemoOpenId] = useState(null)
 
   useEffect(() => {
     try {
@@ -51,7 +53,13 @@ function App() {
 
   const deleteTodo = (id) => setTodos((prev) => prev.filter((t) => t.id !== id))
 
-  const clearDone = () => setTodos((prev) => prev.filter((t) => !t.done))
+  const updateMemo = (id, memo) =>
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, memo } : t)))
+
+  const toggleMemo = (id) =>
+    setMemoOpenId((current) => (current === id ? null : id))
+
+  const clearDone =() => setTodos((prev) => prev.filter((t) => !t.done))
 
   const startEdit = (todo) => {
     setEditingId(todo.id)
@@ -137,6 +145,15 @@ function App() {
               )}
               <button
                 type="button"
+                className={`icon-btn${todo.memo ? ' has-memo' : ''}`}
+                onClick={() => toggleMemo(todo.id)}
+                aria-expanded={memoOpenId === todo.id}
+                aria-label={`Memo for "${todo.title}"`}
+              >
+                Memo
+              </button>
+              <button
+                type="button"
                 className="icon-btn"
                 onClick={() => startEdit(todo)}
                 aria-label={`Edit "${todo.title}"`}
@@ -151,6 +168,9 @@ function App() {
               >
                 Delete
               </button>
+              {memoOpenId === todo.id && (
+                <TodoMemo todo={todo} onChange={updateMemo} />
+              )}
             </li>
           ))}
         </ul>
